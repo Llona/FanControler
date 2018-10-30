@@ -2,6 +2,10 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+#define FAN_SPEED_LEVEL1 10
+#define FAN_SPEED_LEVEL2 128
+#define FAN_SPEED_LEVEL3 254
+
 // pin 12 is 1-Wire device, temperature sensor is connected in here
 #define ONE_WIRE_BUS 12
 int PWM_PIN = 3;
@@ -30,21 +34,36 @@ void loop(void)
   temp_val = sensors.getTempCByIndex(0);
   Serial.println(temp_val);
 
-  if (temp_val < 27)
+  if (temp_val < 33)
   {
-    analogWrite(PWM_PIN, 10);
+    set_fan_speed(FAN_SPEED_LEVEL1);
     Serial.println("fan speed is low");
   }
-  else if (temp_val >= 27 && temp_val <= 30)
+  else if (temp_val >= 33 && temp_val <= 40)
   {
-    analogWrite(PWM_PIN, 128);
+    set_fan_speed(FAN_SPEED_LEVEL2);
     Serial.println("fan speed is med");
   }
   else
   {
-    analogWrite(PWM_PIN, 254);
+    set_fan_speed(FAN_SPEED_LEVEL3);
     Serial.println("fan speed is high");
   }
 
-  delay(500);
+  delay(1000);
+}
+
+void set_fan_speed(int speed)
+{
+  //analogWrite(PWM_PIN, speed);
+  
+  static int prv_speed = 0;
+  if (prv_speed != speed)
+  {
+    analogWrite(PWM_PIN, speed);
+    prv_speed = speed;
+    Serial.print("***renew fan speed to: ");
+    Serial.println(speed);
+  }
+
 }
